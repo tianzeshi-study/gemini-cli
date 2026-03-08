@@ -72,6 +72,11 @@ export function AuthDialog({
       key: AuthType.USE_GEMINI,
     },
     {
+      label: 'Use local Ollama model',
+      value: AuthType.OLLAMA,
+      key: AuthType.OLLAMA,
+    },
+    {
       label: 'Vertex AI',
       value: AuthType.USE_VERTEX_AI,
       key: AuthType.USE_VERTEX_AI,
@@ -89,10 +94,10 @@ export function AuthDialog({
   if (
     defaultAuthTypeEnv &&
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    Object.values(AuthType).includes(defaultAuthTypeEnv as AuthType)
+    Object.values(AuthType).includes(defaultAuthTypeEnv as unknown as AuthType)
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    defaultAuthType = defaultAuthTypeEnv as AuthType;
+    defaultAuthType = defaultAuthTypeEnv as unknown as AuthType;
   }
 
   let initialAuthIndex = items.findIndex((item) => {
@@ -148,6 +153,11 @@ export function AuthDialog({
             setAuthState(AuthState.AwaitingApiKeyInput);
             return;
           }
+        }
+
+        if (authType === AuthType.OLLAMA) {
+          setAuthState(AuthState.Unauthenticated);
+          return;
         }
       }
       setAuthState(AuthState.Unauthenticated);
