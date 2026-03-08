@@ -24,6 +24,7 @@ import { FakeContentGenerator } from './fakeContentGenerator.js';
 import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { determineSurface } from '../utils/surface.js';
 import { RecordingContentGenerator } from './recordingContentGenerator.js';
+import { OllamaContentGenerator } from './ollamaContentGenerator.js';
 import { getVersion, resolveModel } from '../../index.js';
 import type { LlmRole } from '../telemetry/llmRole.js';
 
@@ -61,6 +62,7 @@ export enum AuthType {
   LEGACY_CLOUD_SHELL = 'cloud-shell',
   COMPUTE_ADC = 'compute-default-credentials',
   GATEWAY = 'gateway',
+  OLLAMA = 'ollama',
 }
 
 /**
@@ -86,6 +88,9 @@ export function getAuthTypeFromEnv(): AuthType | undefined {
     process.env['GEMINI_CLI_USE_COMPUTE_ADC'] === 'true'
   ) {
     return AuthType.COMPUTE_ADC;
+  }
+  if (process.env['OLLAMA_BASE_URL'] || process.env['OLLAMA_MODEL']) {
+    return AuthType.OLLAMA;
   }
   return undefined;
 }
@@ -269,6 +274,17 @@ export async function createContentGenerator(
         ...(apiVersionEnv && { apiVersion: apiVersionEnv }),
       });
       return new LoggingContentGenerator(googleGenAI.models, gcConfig);
+    }
+    if (config.authType === AuthType.OLLAMA) {
+      const ollamaBaseUrl = process.env['OLLAMA_BASE_URL'] || undefined;
+      const ollamaModel = process.env['OLLAMA_MODEL'] || gcConfig.getModel();
+      const ollamaApiKey = process.env['OLLAMA_API_KEY'] || undefined;
+      const ollamaGenerator = new OllamaContentGenerator(
+        ollamaBaseUrl,
+        ollamaModel,
+        ollamaApiKey,
+      );
+      return new LoggingContentGenerator(ollamaGenerator, gcConfig);
     }
     throw new Error(
       `Error creating contentGenerator: Unsupported authType: ${config.authType}`,
