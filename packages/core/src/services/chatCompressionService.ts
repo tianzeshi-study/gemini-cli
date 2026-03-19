@@ -353,7 +353,8 @@ export class ChatCompressionService {
       : 'Generate a new <state_snapshot> based on the provided history.';
 
     const summaryResponse = await config.getBaseLlmClient().generateContent({
-      modelConfigKey: { model: modelStringToModelConfigAlias(model) },
+      // modelConfigKey: { model: modelStringToModelConfigAlias(model) },
+      modelConfigKey: { model },
       contents: [
         ...historyForSummarizer,
         {
@@ -378,7 +379,8 @@ export class ChatCompressionService {
     const verificationResponse = await config
       .getBaseLlmClient()
       .generateContent({
-        modelConfigKey: { model: modelStringToModelConfigAlias(model) },
+        // modelConfigKey: { model: modelStringToModelConfigAlias(model) },
+        modelConfigKey: { model },
         contents: [
           ...historyForSummarizer,
           {
